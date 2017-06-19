@@ -15,12 +15,12 @@ defmodule Tail do
 
 	use GenServer
 
-  @type state :: {File.Stream.t, ([String.t]->), integer, term, integer}
+  @type state :: {File.Stream.t, ([String.t]->any()), integer, term, integer}
 
 	@doc """
 	Public interface. Starts a Tail Genserver for the given file, function, and interval (in ms)
 	"""
-  @spec start_link(String.t, ([String.t]->), integer) :: GenServer.on_start
+  @spec start_link(String.t, ([String.t]->any()), integer) :: GenServer.on_start
 	def start_link(file, fun, interval \\ 1000) do
 		GenServer.start_link(__MODULE__, {file, fun, interval})
 	end
@@ -34,7 +34,7 @@ defmodule Tail do
 	end
 
 	#init callback. Starts the check loop by casting :check to self and then returns the initial state
-  @spec init({String.t, ([String.t]->), integer}) :: {:ok, state}
+  @spec init({String.t, ([String.t]->any()), integer}) :: {:ok, state}
 	def init({file, fun, interval}) do
 		stream = File.stream!(file)
 		GenServer.cast(self, :check)
@@ -63,7 +63,7 @@ defmodule Tail do
 	#file will appear eventually. If the file hasn't been modified since last time, it also returns the current state.
 	#If the file has been modified, Stream.drop(position) skips lines previously read, then Enum.each gathers the new lines.
 	#Returns the new last_modified and position.
-  @spec check_for_lines(File.Stream.t, ([String.t]->), term, integer) :: {term, integer}
+  @spec check_for_lines(File.Stream.t, ([String.t]->any()), term, integer) :: {term, integer}
 	defp check_for_lines(stream, fun, last_modified, position) do
 		cond do
 			!File.exists?(stream.path) ->
