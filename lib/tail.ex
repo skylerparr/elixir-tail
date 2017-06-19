@@ -37,7 +37,7 @@ defmodule Tail do
   @spec init({String.t, ([String.t]->any()), integer}) :: {:ok, state}
 	def init({file, fun, interval}) do
 		stream = File.stream!(file)
-		GenServer.cast(self, :check)
+		GenServer.cast(self(), :check)
     {:ok, {stream, fun, interval, nil, 0}}
 	end
 
@@ -48,7 +48,7 @@ defmodule Tail do
 	def handle_cast(:check, {stream, fun, interval, last_modified, position}) do
 		{last_modified, position} = check_for_lines(stream, fun, last_modified, position)
 		:timer.sleep(interval)
-		GenServer.cast(self, :check)
+		GenServer.cast(self(), :check)
     {:noreply, {stream, fun, interval, last_modified, position}}
 	end
 
